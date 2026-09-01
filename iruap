@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+// cli launcher for your app
+
+$command = $argv[1] ?? null;
+$action  = $argv[2] ?? 'up';  // default action is "up"
+
+switch ($command) {
+    case 'run':
+        echo "Starting development server on http://localhost:8000...\n";
+        passthru('php -S localhost:8000 -t public');
+        break;
+
+    case 'create:admin':
+        require __DIR__ . '/commands/CreateAdminCommand.php';
+        (new CreateAdminCommand())->run($argv);
+        break;
+
+    case 'migrate':
+        require __DIR__ . '/commands/migrate.php';
+        break;
+
+    default:
+        echo "Unknown command. Available commands:\n";
+        echo "  run                 - Start local dev server\n";
+        echo "  create:admin        - Create an admin user\n";
+        echo "  migrate [up|down]   - Run or rollback migrations\n";
+        break;
+}
