@@ -22,6 +22,7 @@ header('Content-Type: application/json');
 
 $allowedOrigins = [
     'http://localhost:3000',
+    'https://frontend.iruhost.com',
 ];
 
 // Get the Origin header

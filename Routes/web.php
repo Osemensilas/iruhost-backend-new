@@ -68,6 +68,8 @@ $router->get('/api/user-app', [UserProductController::class, 'AppList']);
 /*User Tickets*/
 $router->post('/api/send-ticket', [SupportController::class, 'OpenTicket']);
 $router->get('/api/user-tickets', [SupportController::class, 'GetTickets']);
+$router->get('/api/unresolved-tickets', [SupportController::class, 'GetUnresolvedTickets']);
+$router->get('/api/get-support-chats', [ChatsController::class, 'GetSupportMessages']);
 
 /*Chat Box Url*/
 $router->post('/api/chat-registration', [ChatsController::class, 'CreateChatUser']);
@@ -86,6 +88,6 @@ $router->post('/api/get-related-blogs', [BlogsController::class, 'RelatedBlog'])
 $router->post('/api/get-other-blogs', [BlogsController::class, 'OtherBlog']);
 $router->get('/api/get-blog/{slug}', [BlogsController::class, 'GetBlogBySlug']);
 
-/*Comments Routs*/
+/*Comments Routes*/
 $router->post('/api/add-new-comment', [CommentsController::class, 'AddNewComment']);
 $router->get('/api/get-comments', [CommentsController::class, 'GetComments']);
