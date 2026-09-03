@@ -1,0 +1,82 @@
+# ==============================
+# ✅ Core Rewrite Rules
+# ==============================
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Handle CORS preflight (OPTIONS)
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ index.php [QSA,L]
+
+    # Send all non-file/directory requests to index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# ==============================
+# ✅ CORS Headers Configuration
+# ==============================
+<IfModule mod_headers.c>
+    # Remove existing headers to prevent duplicates
+    Header always unset Access-Control-Allow-Origin
+    Header always unset Access-Control-Allow-Methods
+    Header always unset Access-Control-Allow-Headers
+    Header always unset Access-Control-Allow-Credentials
+
+    # Define allowed origins
+    SetEnvIf Origin "^(https?://(www\.)?(localhost:3000|iruhost\.com|iruap-studio\.vercel\.app|dashboard\.iruhost\.com|iruhost-dashboard\.vercel\.app|iruhost-frontend-bm2c\.vercel\.app))$" ALLOWED_ORIGIN=$1
+    
+    # Set CORS headers only for allowed origins
+    Header set Access-Control-Allow-Origin "%{ALLOWED_ORIGIN}e" env=ALLOWED_ORIGIN
+    Header set Access-Control-Allow-Credentials "true" env=ALLOWED_ORIGIN
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" env=ALLOWED_ORIGIN
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With" env=ALLOWED_ORIGIN
+    Header set Access-Control-Max-Age "86400" env=ALLOWED_ORIGIN
+    
+    # Add Vary header for proper caching
+    Header append Vary Origin
+    
+    # Security headers
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# ==============================
+# ✅ LiteSpeed Configuration
+# ==============================
+<IfModule LiteSpeed>
+    CacheEnable public
+    CacheDisable /api/
+    RewriteEngine On
+    
+    # Pass Origin header and prevent caching for API requests
+    RewriteCond %{REQUEST_URI} ^/api/ [NC]
+    RewriteRule .* - [E=Cache-Control:no-store,E=HTTP_ORIGIN:%{HTTP:ORIGIN}]
+    
+    # Enable CORS for LiteSpeed
+    SetEnv LSAPI_MAX_HEADER_LEN 65536
+    SetEnv LSAPI_ACCEPT_UNIX_SOCKET_CREDENTIALS 1
+</IfModule>
+
+# ==============================
+# ✅ PHP Configuration
+# ==============================
+<IfModule mod_php.c>
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value session.cookie_samesite "Strict"
+</IfModule>
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php81” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php81 .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit
