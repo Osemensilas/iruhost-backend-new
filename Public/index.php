@@ -66,7 +66,7 @@ use App\Core\Router;
 $router = new Router();
 
 // Load route definitions
-require_once __DIR__ . '/../routes/web.php';
+require_once __DIR__ . '/../Routes/web.php';
 
 // Resolve and handle request
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
