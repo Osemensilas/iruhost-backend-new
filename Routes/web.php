@@ -64,6 +64,7 @@ $router->get('/api/user-hosting', [UserProductController::class, 'HostingList'])
 $router->get('/api/user-email', [UserProductController::class, 'EmailList']);
 $router->get('/api/user-ssl', [UserProductController::class, 'SslList']);
 $router->get('/api/user-app', [UserProductController::class, 'AppList']);
+$router->get('/api/verify-renewal', [UserProductController::class, 'VerifyRenewal']);
 
 /*User Tickets*/
 $router->post('/api/send-ticket', [SupportController::class, 'OpenTicket']);
@@ -78,6 +79,7 @@ $router->get('/api/get-chats', [ChatsController::class, 'GetChats']);
 
 /*Flutterwave Call*/
 $router->post('/api/payment-success', [FlutterwaveController::class, 'PaymentSuccessful']);
+$router->post('/api/topup-success', [FlutterwaveController::class, 'TopupSuccessful']);
 
 /*Blogs Routes*/
 $router->get('/api/get-blogs', [BlogsController::class, 'GetBlogs']);
