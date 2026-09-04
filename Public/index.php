@@ -22,6 +22,7 @@ header('Content-Type: application/json');
 
 $allowedOrigins = [
     'https://iruhost.com',
+    'https://www.iruhost.com',
 ];
 
 // Get the Origin header
