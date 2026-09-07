@@ -240,7 +240,7 @@ class AuthController{
             'message' => 'successful'
         ]);
 
-        $this->loginMessage($rows['name'], $email);
+        $this->loginMessage($rows['firstname'] . " " . $rows['lastname'], $email);
     }
 
     private function checkCart($userSession){
