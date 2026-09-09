@@ -160,7 +160,7 @@ class ChatsController{
     }
 
     private function sentChatMessage($message){
-       $subject = "New Visitor Message";
+       $subject = "New Message From Chatbox";
         
 
         $mail = new PHPMailer(true);
