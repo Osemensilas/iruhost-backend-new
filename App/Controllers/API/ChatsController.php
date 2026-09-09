@@ -160,7 +160,7 @@ class ChatsController{
     }
 
     private function sentChatMessage($message){
-       $subject = "New Login to Your IruHost Account";
+       $subject = "New Visitor Message";
         
 
         $mail = new PHPMailer(true);
