@@ -1510,12 +1510,27 @@ class FlutterwaveController{
         }
     
         try {
-            $this->resend->emails->send([
-                'from' => 'IruHost <contact@iruhost.com>',
-                'to' => $userEmail,
-                'subject' => 'Your cPanel Account Information',
-                'html' => "
-                <div style='font-family: Arial, sans-serif; background-color: #f6f8fb; padding: 30px;'>
+            $mail = new PHPMailer(true);
+
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host       = 'iruhost.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'noreply@iruhost.com';
+            $mail->Password   = $_ENV['MAIL_PASSWORD'];  // Store password in .env
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;  // SSL encryption for port 465
+            $mail->Port       = 465; // Use 465 for SSL
+
+            // Recipients
+            $mail->setFrom('noreply@iruhost.com', 'IruHost');
+            $mail->addAddress($userEmail, $clientName);
+            $mail->addReplyTo('contact@iruhost.com', 'IruHost Support');
+
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = 'Your cPanel Account Information';
+            $mail->Body    = "
+            <div style='font-family: Arial, sans-serif; background-color: #f6f8fb; padding: 30px;'>
                 <div style='max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 30px;'>
                     
                     <h2 style='color: #1a1a1a; text-align: center; margin-bottom: 20px;'>Welcome to IruHost</h2>
@@ -1526,7 +1541,7 @@ class FlutterwaveController{
                     Your hosting account for <strong style='color:#0056b3;'>{$domainCreated}</strong> has been successfully set up.
                     You can now log in to your cPanel to manage your website, emails, and files using the details below:
                     </p>
-                    {$whmInfo}
+                    
                     <table cellpadding='8' cellspacing='0' style='width:100%; border-collapse: collapse; margin: 20px 0;'>
                     <tr style='background-color:#f0f4ff;'>
                         <td style='width:35%; font-weight:bold; color:#333;'>Login URL:</td>
@@ -1542,6 +1557,10 @@ class FlutterwaveController{
                     </tr>
                     </table>
 
+                    <div>
+                        $whmInfo
+                    </div>
+
                     <p style='color:#333; line-height:1.6;'>
                     <em>Note:</em> If you registered a new domain, please allow up to <strong>72 hours</strong> for DNS propagation.
                     </p>
@@ -1555,106 +1574,34 @@ class FlutterwaveController{
                     Need help? Contact us at <a href='mailto:contact@iruhost.com' style='color:#007bff;'>contact@iruhost.com</a>
                     </p>
                 </div>
-                </div>
-                "
-            ]);
+            </div>
+            ";
 
+            // Plain text version for email clients that don't support HTML
+            $mail->AltBody = "Dear {$clientName},\n\n"
+                        . "Your hosting account for {$domainCreated} has been successfully set up.\n\n"
+                        . "Login URL: https://{$this->whmHostname}:2083\n"
+                        . "Username: {$usernameCreated}\n"
+                        . "Password: {$password}\n\n"
+                        . "Note: If you registered a new domain, please allow up to 72 hours for DNS propagation.\n\n"
+                        . "Thank you for choosing IruHost.\n"
+                        . "Need help? Contact us at contact@iruhost.com";
 
-        } catch (\Exception $e) {
+            $mail->send();
             
+            // Log success
+            error_log("Hosting email sent successfully to: {$userEmail}");
+            
+            return true;
+
+        } catch (Exception $e) {
+            // Log the error for debugging
+            error_log("Email sending failed: {$mail->ErrorInfo}");
+            
+            // Optionally return false or throw exception
+            return false;
         }
     }
-
-    // private function sendHostingMessage($usernameCreated, $password, $domainCreated, $ipAddress, $userEmail, $clientName){
-    //     try {
-    //         $mail = new PHPMailer(true);
-
-    //         // Server settings
-    //         $mail->isSMTP();
-    //         $mail->Host       = 'iruhost.com';
-    //         $mail->SMTPAuth   = true;
-    //         $mail->Username   = 'noreply@iruhost.com';
-    //         $mail->Password   = $_ENV['MAIL_PASSWORD'];  // Store password in .env
-    //         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;  // SSL encryption for port 465
-    //         $mail->Port       = 465; // Use 465 for SSL
-
-    //         // Recipients
-    //         $mail->setFrom('noreply@iruhost.com', 'IruHost');
-    //         $mail->addAddress($userEmail, $clientName);
-    //         $mail->addReplyTo('contact@iruhost.com', 'IruHost Support');
-
-    //         // Content
-    //         $mail->isHTML(true);
-    //         $mail->Subject = 'Your cPanel Account Information';
-    //         $mail->Body    = "
-    //         <div style='font-family: Arial, sans-serif; background-color: #f6f8fb; padding: 30px;'>
-    //         <div style='max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 30px;'>
-                
-    //             <h2 style='color: #1a1a1a; text-align: center; margin-bottom: 20px;'>Welcome to IruHost</h2>
-                
-    //             <p style='color: #333;'>Dear <strong>{$clientName}</strong>,</p>
-                
-    //             <p style='color: #333; line-height: 1.6;'>
-    //             Your hosting account for <strong style='color:#0056b3;'>{$domainCreated}</strong> has been successfully set up.
-    //             You can now log in to your cPanel to manage your website, emails, and files using the details below:
-    //             </p>
-                
-    //             <table cellpadding='8' cellspacing='0' style='width:100%; border-collapse: collapse; margin: 20px 0;'>
-    //             <tr style='background-color:#f0f4ff;'>
-    //                 <td style='width:35%; font-weight:bold; color:#333;'>Login URL:</td>
-    //                 <td><a href='https://{$this->whmHostname}:2083' style='color:#007bff; text-decoration:none;'>https://{$this->whmHostname}:2083</a></td>
-    //             </tr>
-    //             <tr>
-    //                 <td style='font-weight:bold; color:#333;'>Username:</td>
-    //                 <td style='color:#555;'>{$usernameCreated}</td>
-    //             </tr>
-    //             <tr style='background-color:#f0f4ff;'>
-    //                 <td style='font-weight:bold; color:#333;'>Password:</td>
-    //                 <td style='color:#555;'>{$password}</td>
-    //             </tr>
-    //             </table>
-
-    //             <p style='color:#333; line-height:1.6;'>
-    //             <em>Note:</em> If you registered a new domain, please allow up to <strong>72 hours</strong> for DNS propagation.
-    //             </p>
-                
-    //             <div style='text-align:center; margin-top:30px;'>
-    //             <a href='https://{$this->whmHostname}:2083' style='display:inline-block; background-color:#007bff; color:#fff; text-decoration:none; padding:12px 25px; border-radius:6px; font-weight:bold;'>Login to cPanel</a>
-    //             </div>
-
-    //             <p style='text-align:center; color:#777; font-size:13px; margin-top:30px;'>
-    //             Thank you for choosing <strong>IruHost</strong>.<br>
-    //             Need help? Contact us at <a href='mailto:contact@iruhost.com' style='color:#007bff;'>contact@iruhost.com</a>
-    //             </p>
-    //         </div>
-    //         </div>
-    //         ";
-
-    //         // Plain text version for email clients that don't support HTML
-    //         $mail->AltBody = "Dear {$clientName},\n\n"
-    //                     . "Your hosting account for {$domainCreated} has been successfully set up.\n\n"
-    //                     . "Login URL: https://{$this->whmHostname}:2083\n"
-    //                     . "Username: {$usernameCreated}\n"
-    //                     . "Password: {$password}\n\n"
-    //                     . "Note: If you registered a new domain, please allow up to 72 hours for DNS propagation.\n\n"
-    //                     . "Thank you for choosing IruHost.\n"
-    //                     . "Need help? Contact us at contact@iruhost.com";
-
-    //         $mail->send();
-            
-    //         // Log success
-    //         error_log("Hosting email sent successfully to: {$userEmail}");
-            
-    //         return true;
-
-    //     } catch (Exception $e) {
-    //         // Log the error for debugging
-    //         error_log("Email sending failed: {$mail->ErrorInfo}");
-            
-    //         // Optionally return false or throw exception
-    //         return false;
-    //     }
-    // }
     
     private function webApp($productName, $cartId, $domain, $amount){
         $productId = uniqid('prod_');
