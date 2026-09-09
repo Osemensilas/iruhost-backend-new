@@ -13,8 +13,11 @@ class ChatsController{
 
     protected $userId;
     protected $pdo;
-    protected $resend;
-    protected $resendApiCode;
+    protected $smtpPassword;
+    protected $smtpUsername;
+    protected $smtpHost;
+    protected $smtpPort;
+    protected $smtpEncryption;
 
     public function __construct()
     {
@@ -22,8 +25,12 @@ class ChatsController{
         $dotenv->load();
         $this->pdo = DB::connection();
         $this->userId = $_SESSION['user']['user_id'] ?? $_SESSION['guest']['id'] ?? null;
-        $this->resendApiCode = $_ENV['RESEND_API_KEY'] ?? null;
-        //$this->resend = Resend::client($this->resendApiCode);
+        
+        $this->smtpHost = $_ENV['SMTP_HOST'] ?? null;
+        $this->smtpPort = $_ENV['SMTP_PORT'] ?? null;
+        $this->smtpUsername = $_ENV['SMTP_USERNAME'] ?? null;
+        $this->smtpPassword = $_ENV['SMTP_PASSWORD'] ?? null;
+        $this->smtpEncryption = $_ENV['SMTP_ENCRYPTION'] ?? null;
     }
 
     public function CreateChatUser(){
@@ -153,17 +160,37 @@ class ChatsController{
     }
 
     private function sentChatMessage($message){
-       try {
-            $this->resend->emails->send([
-                'from' => 'IruHost <contact@iruhost.com>',
-                'to' => ['osemensilas@gmail.com'],
-                'subject' => 'New Chat',
-                'html' => "
-                <p>{$message}</p>
-                "
-            ]);
+       $subject = "New Login to Your IruHost Account";
+        
 
-        } catch (\Exception $e) {
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = $this->smtpHost; // your SMTP server
+            $mail->SMTPAuth = true;
+            $mail->Username = $this->smtpUsername; // SMTP username
+            $mail->Password = $this->smtpPassword;   // SMTP password
+            $mail->SMTPSecure = $this->smtpEncryption; // or ENCRYPTION_SMTPS
+            $mail->Port = $this->smtpPort; // 465 for SSL
+
+            $mail->setFrom('noreply@iruhost.com', 'IruHost');
+            $mail->addAddress("osemensilas@gmail.com", "Osemen Silas");
+
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body = "
+                <div style='font-family: Arial, sans-serif; background-color: #f6f8fb; padding: 30px;'>
+                    $message
+                </div>
+            ";
+
+            if ($mail->send()){
+                
+            } else {
+                
+            }
+        } catch (Exception $e) {
             
         }
     }
