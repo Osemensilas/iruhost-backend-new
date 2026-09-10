@@ -96,4 +96,4 @@ $router->post('/api/add-new-comment', [CommentsController::class, 'AddNewComment
 $router->get('/api/get-comments', [CommentsController::class, 'GetComments']);
 
 /*Plans Route*/
-$router->get('/api/add-hosting-plan', [HostingComponent::class, 'FetchSharedHostingPlans']);
+$router->get('/api/fetch-shared-hosting', [HostingComponent::class, 'FetchSharedHostingPlans']);
