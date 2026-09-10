@@ -240,13 +240,6 @@ class UserProductController{
             return;
         }
 
-        $dollarRateStmt = $this->pdo->prepare("SELECT * FROM `currency` WHERE currency = ?");
-        $dollarRateStmt->execute(['naira']);
-
-        $dollarRate = $dollarRateStmt->fetch(PDO::FETCH_ASSOC);
-
-        $dollarValue = $dollarRate['value'];
-
         $productId = $_GET['product_id'];
         $amout = $_GET['amount'];
         $transactionId = $_GET['transaction_id'];

@@ -12,6 +12,7 @@ use App\Controllers\API\SupportController;
 use App\Controllers\API\ChatsController;
 use App\Controllers\API\FlutterwaveController;
 use App\Controllers\API\CommentsController;
+use App\Controllers\API\HostingComponent;
 
 /*Session Route*/
 $router->get("/api/session", [SessionController::class, "UserSession"]);
@@ -93,3 +94,6 @@ $router->get('/api/get-blog/{slug}', [BlogsController::class, 'GetBlogBySlug']);
 /*Comments Routes*/
 $router->post('/api/add-new-comment', [CommentsController::class, 'AddNewComment']);
 $router->get('/api/get-comments', [CommentsController::class, 'GetComments']);
+
+/*Plans Route*/
+$router->get('/api/add-hosting-plan', [HostingComponent::class, 'FetchSharedHostingPlans']);
