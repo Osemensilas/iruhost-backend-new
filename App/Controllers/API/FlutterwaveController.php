@@ -277,7 +277,41 @@ class FlutterwaveController{
 
         $totalBonus = $hosting_bonus + $domain_bonus + $ng_bonus + $ssl_bonus + $email_bonus + $web_bonus;
 
+        if ($hosting_bonus){
+            $recordHostingName = "hosting";
+            $hostingBonus = $hosting_bonus;
+        }
+
+        if ($domain_bonus){
+            $recordDomainName = "domain";
+            $domainBonus = $domain_bonus;
+        }
+
+        if ($ng_bonus){
+            $recordNgName = "domain";
+            $ngBonus = $ng_bonus;
+        }
+
+        if($ssl_bonus){
+            $recordSslName = "SSL";
+            $sslBonus = $ssl_bonus;
+        } 
+        
+        if($email_bonus){
+            $recordEmailName = "email";
+            $emailBonus = $email_bonus;
+        } 
+        
+        if($web_bonus){
+            $recordWebName = "web app";
+            $webBonus = $web_bonus;
+        }
+
         $this->referalBonus($totalBonus);
+        $this->recordReferals(
+            $recordDomainName, $recordHostingName, $recordEmailName, $recordNgName, $recordSslName,
+            $recordWebName, $domainBonus, $hostingBonus, $ngBonus, $emailBonus, $sslBonus, $webBonus
+        );
 
         echo json_encode([
             'status' => 'successful',
@@ -360,6 +394,34 @@ class FlutterwaveController{
             "status" => "success",
             "message" => "Bonus added successfully"
         ];
+    }
+
+    private function recordReferals(
+        $recordDomainName, $recordHostingName, $recordEmailName, $recordNgName, $recordSslName,
+        $recordWebName, $domainBonus, $hostingBonus, $ngBonus, $emailBonus, $sslBonus, $webBonus){
+
+        $getReferralId = $this->pdo->prepare("SELECT * FROM users WHERE user_id = ?");
+        $getReferralId->execute([$this->userId]);
+
+        if ($getReferralId->rowCount() < 1){
+            return [
+                "status" => "error",
+                "message" => "User do not exist"
+            ];
+        }
+
+        $rows = $getReferralId->fetch(PDO::FETCH_ASSOC);
+
+        $referralCode = $rows['referred_by'];
+
+        if (!$referralCode){
+            return [
+                "status" => "error",
+                "message" => "Was not referred"
+            ];
+        }
+
+        
     }
 
     private function regDomain($productName, $billing, $cartId, $domain, $amount){
