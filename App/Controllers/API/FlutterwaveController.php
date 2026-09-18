@@ -421,7 +421,24 @@ class FlutterwaveController{
             ];
         }
 
-        
+        $records = [
+            [$recordDomainName, $domainBonus],
+            [$recordHostingName, $hostingBonus],
+            [$recordEmailName, $emailBonus],
+            [$recordNgName, $ngBonus],
+            [$recordSslName, $sslBonus],
+            [$recordWebName, $webBonus]
+        ];
+
+        $stmt = $this->pdo->prepare("INSERT INTO `referal_history`(`referer_id`, `refered_id`, `product`, `commission`, `transaction`) VALUES (?,?,?,?,?)");
+
+        foreach($records as $record){
+            if (!$record[0]){
+                continue;
+            }
+
+            $stmt->execute([$referralCode, $this->userId, $record[0], $record[1], "successful"]);
+        }
     }
 
     private function regDomain($productName, $billing, $cartId, $domain, $amount){
