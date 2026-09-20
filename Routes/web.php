@@ -13,6 +13,7 @@ use App\Controllers\API\ChatsController;
 use App\Controllers\API\FlutterwaveController;
 use App\Controllers\API\CommentsController;
 use App\Controllers\API\HostingComponent;
+use App\Controllers\API\MailCowController;
 
 /*Session Route*/
 $router->get("/api/session", [SessionController::class, "UserSession"]);
@@ -97,3 +98,9 @@ $router->get('/api/get-comments', [CommentsController::class, 'GetComments']);
 
 /*Plans Route*/
 $router->get('/api/fetch-shared-hosting', [HostingComponent::class, 'FetchSharedHostingPlans']);
+
+
+/*MailCrow Routes*/
+$router->post('/api/create-mailcow-mail', [MailCowController::class, 'CreateEmailAccount']);
+$router->get('/api/fetch-mailcow-mail', [MailCowController::class, 'FetchEmailAccount']);
+$router->post('/api/delete-mailcow-mail', [MailCowController::class, 'DeleteEmailAccount']);
