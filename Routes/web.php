@@ -101,6 +101,6 @@ $router->get('/api/fetch-shared-hosting', [HostingComponent::class, 'FetchShared
 
 
 /*MailCrow Routes*/
-$router->post('/api/create-mailcow-mail', [MailCowController::class, 'CreateEmailAccount']);
-$router->get('/api/fetch-mailcow-mail', [MailCowController::class, 'FetchEmailAccount']);
-$router->post('/api/delete-mailcow-mail', [MailCowController::class, 'DeleteEmailAccount']);
+$router->post('/api/create-mailcow-mail', [UserProductController::class, 'CreateEmailAccount']);
+$router->get('/api/fetch-mailcow-mail', [UserProductController::class, 'FetchEmailAccount']);
+$router->post('/api/delete-mailcow-mail', [UserProductController::class, 'DeleteEmailAccount']);
