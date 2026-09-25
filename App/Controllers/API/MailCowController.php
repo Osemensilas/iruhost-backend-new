@@ -26,7 +26,7 @@ class MailCowController
         }
 
         $this->mailcowApi = $_ENV['MAIL_COW_READ_WRITE_API'] ?? null;
-        $this->mailCowUrl = 'https://mail.iruhost.com';
+        $this->mailCowUrl = 'https://mailcow.iruhost.com';
         $this->userId = $_SESSION['user']['user_id'] ?? $_SESSION['guest']['id'] ?? null;
         $this->pdo = DB::connection();
         $this->encryptionKey = hash('sha256', $_ENV['ENCRYPTION_KEY']);
