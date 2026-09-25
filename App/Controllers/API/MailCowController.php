@@ -35,6 +35,11 @@ class MailCowController
 
     public function CreateEmailAccount()
     {
+        print_r($_SESSION);
+        echo "<br><br>";
+        var_dump($this->userId);
+        exit;
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode([
                 'status' => 'error',
@@ -42,8 +47,6 @@ class MailCowController
             ]);
             return;
         }
-
-        print_r($this->userId);
 
         if (!isset($_SESSION['user'])){
             echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
