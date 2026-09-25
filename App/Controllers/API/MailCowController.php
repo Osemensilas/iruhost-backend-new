@@ -43,7 +43,7 @@ class MailCowController
             return;
         }
 
-        print_r($_SESSION['user']);
+        print_r($this->userId);
 
         if (!isset($_SESSION['user'])){
             echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
