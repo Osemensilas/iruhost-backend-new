@@ -243,6 +243,200 @@ class AuthController{
         $this->loginMessage($rows['firstname'] . " " . $rows['lastname'], $email);
     }
 
+    public function ForgetPassword(){
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
+            return;
+        }
+        
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $email = strtolower($data['email']);
+
+        if (!filter_var( $email, FILTER_VALIDATE_EMAIL)){
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Invalid email address'
+            ]);
+            return;
+        }
+
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+
+        if (!$stmt->rowCount() > 0){
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'User do not exist'
+            ]);
+            return;
+        }
+
+        $rows = $stmt->fetch();
+
+        $name = $rows['name'];
+
+        $randomCode = rand(100000, 999999);
+
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+
+        $passwordCode = $this->sendPasswordCode($name, $randomCode, $email);
+        $codeStatus = $passwordCode['status'] ?? 'unknown';
+        $codeMessage = $passwordCode['msg'] ?? 'unknown';
+
+        if ($codeStatus === "successful"){
+            $stmt = $this->pdo->prepare("SELECT * FROM `forget_password` WHERE email = ?");
+            $stmt->execute([$email]);
+
+            if ($stmt->rowCount() > 0){
+                $stmt = $this->pdo->prepare("UPDATE forget_password SET code = ? WHERE email = ?");
+                $result = $stmt->execute([$randomCode, $email]);
+
+                if ($result){
+                    echo json_encode([
+                        'status' => 'success',
+                        'message' => 'Message Sent Successfullly'
+                    ]);
+                }
+            }else{
+                $stmt = $this->pdo->prepare("INSERT INTO `forget_password`(`email`, `code`) VALUES (?,?)");
+                $result = $stmt->execute([$email, $randomCode]);
+
+                if ($result){
+                    echo json_encode([
+                        'status' => 'success',
+                        'message' => 'Message Sent Successfullly'
+                    ]);
+                }
+            }
+        }else{
+            echo json_encode([
+                'status' => 'error',
+                'message' => $codeMessage
+            ]);
+        }
+    }
+
+    public function UpdatePassword() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
+            return;
+        }
+        
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $email = $data['email'];
+        $password = $data['formData']['password'];
+        $confirmPassword = $data['formData']['confirmPassword'];
+
+        if($password === "" || $confirmPassword === "" || $email === ""){
+            echo json_encode(['status' => 'error', 'message' => 'All field rquired']);
+            return;
+        }
+
+        if (strlen($password) < 8){
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Password should be at least 8 characters'
+            ]);
+            return;
+        }
+
+        if (!preg_match('/[A-Z]/', $password)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Password must contain at least one uppercase'
+            ]);
+            return;
+        }
+        if (!preg_match('/[a-z]/', $password)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Password must contain at least one lowercase'
+            ]);
+            return;
+        }
+        if (!preg_match('/[0-9]/', $password)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Password must contain at least one number'
+            ]);
+            return;
+        }
+        if (!preg_match('/[\W]/', $password)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Password must contain at least one special character'
+            ]);
+            return;
+        }
+
+        if ($confirmPassword != $password){
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Passwords do not match'
+            ]);
+            return;
+        }
+
+        $enctPassword = password_hash($password, PASSWORD_BCRYPT);
+
+        $stmt = $this->pdo->prepare("UPDATE users SET password = ? WHERE email = ?");
+        $result = $stmt->execute([$enctPassword, $email]);
+
+        if ($result){
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Passwords updated'
+            ]);
+        }
+    }
+
+    public function PassResetCode(){
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $pdo = DB::connection();
+        
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $email = $data['email'];
+        $code = $data['code'];
+
+        if ($code === '' || $email === ''){
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'All field required'
+            ]);
+            return;
+        }
+
+        if (!filter_var( $email, FILTER_VALIDATE_EMAIL)){
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Invalid email address'
+            ]);
+            return;
+        }
+
+        $stmt = $pdo->prepare("SELECT * FROM forget_password WHERE email = ? AND code = ?");
+        $stmt->execute([$email, $code]);
+
+        if ($stmt->rowCount() > 0){
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'code correct'
+            ]);
+        }else{
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Invalid reset code'
+            ]);
+        }
+    }
+
     private function checkCart($userSession){
         $userId = $_SESSION['user']['user_id'];
         $guestId = $_SESSION['guest']['id'] ?? null;
@@ -478,6 +672,56 @@ class AuthController{
                         <p style='color: #333; line-height: 1.6;'>Hello {$name},</p>
                         <p style='color: #333; line-height: 1.6;'>You have successfully logged in to your IruHost account.</p>
                         <p style='color: #333; line-height: 1.6;'>If this login was not initiated by you, please contact our support team immediately.</p>
+                        
+                        <div style='text-align:center; color:#777; font-size:13px; margin-top:30px;'>
+                        Thank you for being a valued member of the <strong>IruHost</strong> community.<br>
+                        Need help? Contact us at <a href='mailto:support@iruhost.com'>support@iruhost.com</a>
+                        <div class='logo' style='margin-top: 20px; height: max-content; width: 100%; display: flex; justify-content: center; align-items: center;'>
+                            <img src='https://iruhost.com/logo.png' alt='IruHost Logo' style='display: block; margin: 20px auto; width: 60px; height: 60px; object-fit: contain;'>
+                        </div>
+                    </div>
+                </div>
+            ";
+
+            if ($mail->send()){
+                
+            } else {
+                
+            }
+        } catch (Exception $e) {
+            
+        }
+    }
+
+    private function sendPasswordCode($name, $randomCode, $email){
+
+        $subject = "Password Reset Code, {$name}!";
+
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = $this->smtpHost; // your SMTP server
+            $mail->SMTPAuth = true;
+            $mail->Username = $this->smtpUsername; // SMTP username
+            $mail->Password = $this->smtpPassword;   // SMTP password
+            $mail->SMTPSecure = $this->smtpEncryption; // or ENCRYPTION_SMTPS
+            $mail->Port = $this->smtpPort; // 465 for SSL
+
+            $mail->setFrom('noreply@iruhost.com', 'IruHost');
+            $mail->addAddress($email, $name);
+
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body = "
+                <div style='font-family: Arial, sans-serif; background-color: #f6f8fb; padding: 30px;'>
+                    <div style='max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 30px;'>
+                        
+                        <h2 style='color: #1a1a1a; text-align: center; margin-bottom: 20px;'>Password Reset Code</h2>
+                        
+                        <p style='color: #333; line-height: 1.6;'>Hello {$name},</p>
+                        <p style='color: #333; line-height: 1.6;'>Your reset code is <strong>{$randomCode}</strong>.</p>
+                        <p style='color: #333; line-height: 1.6;'>If this request was not initiated by you, please contact our support team immediately.</p>
                         
                         <div style='text-align:center; color:#777; font-size:13px; margin-top:30px;'>
                         Thank you for being a valued member of the <strong>IruHost</strong> community.<br>
