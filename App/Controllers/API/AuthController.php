@@ -734,12 +734,21 @@ class AuthController{
             ";
 
             if ($mail->send()){
-                
+                return [
+                        'status' => 'successful',
+                        'msg' => "Message Sent Successfully"
+                    ];
             } else {
-                
+                return [
+                    'status' => 'error',
+                    'msg' => 'Failed to send email'
+                ];
             }
         } catch (Exception $e) {
-            
+            return [
+                'status' => 'error',
+                'msg' => $e->getMessage()
+            ];
         }
     }
 
