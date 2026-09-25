@@ -274,7 +274,7 @@ class AuthController{
 
         $rows = $stmt->fetch();
 
-        $name = $rows['firstname'] . " " . $rows['lastname'];
+        $name = ucwords(strtolower($rows['firstname'] . " " . $rows['lastname']));
 
         $randomCode = rand(100000, 999999);
 
