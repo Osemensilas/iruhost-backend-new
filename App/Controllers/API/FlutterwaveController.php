@@ -1098,7 +1098,13 @@ class FlutterwaveController{
             if ($productName === "reseller_growth" || $productName === "reseller_starter"
             || $productName === "reseller_pro" || $productName === "reseller_enterprise"
             ){
-                $createWHMResponse = $this->converToWHM($username);
+                $limits = [
+                    'reseller_starter'    => 25,
+                    'reseller_growth'     => 50,
+                    'reseller_pro'        => 75,
+                    'reseller_enterprise' => 100,
+                ];
+                $createWHMResponse = $this->converToWHM($username, $limits[$productName]);
             }
 
             if ($createWHMResponse['success']) {
@@ -1166,7 +1172,7 @@ class FlutterwaveController{
         }
     }
 
-    private function converToWHM($username){
+    private function converToWHM($username, $accountLimit = 0){
         $server = "https://{$this->whmHostname}:2087/json-api/setupreseller";
 
         $query = http_build_query([
@@ -1196,8 +1202,58 @@ class FlutterwaveController{
             throw new Exception("Failed to convert account to reseller");
         }
 
+        // Now apply the account creation limit
+        $limitResult = $this->setResellerAccountLimit($username, $accountLimit);
+
+        if (!$limitResult['success']) {
+            throw new Exception("Reseller created but failed to set account limit: " . $limitResult['message']);
+        }
+
         return [
-            'status' => 'success'
+            'status' => 'success',
+            'success' => true // fixes the bug in regHosting's check
+        ];
+    }
+
+    private function setResellerAccountLimit($username, $accountLimit = 0){
+        $server = "https://{$this->whmHostname}:2087/json-api/setresellerlimits";
+
+        $enableLimit = $accountLimit > 0 ? 1 : 0;
+
+        $query = http_build_query([
+            "user" => $username,
+            "enable_account_limit" => $enableLimit,
+            "account_limit" => $accountLimit,
+        ]);
+
+        $curl = curl_init();
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_URL, $server . "?" . $query);
+
+        $headers = [
+            "Authorization: whm {$this->whmUsername}:{$this->whmApiToken}"
+        ];
+
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+
+        $result = json_decode($response, true);
+
+        if (!isset($result['metadata']['result']) || $result['metadata']['result'] != 1) {
+            return [
+                'success' => false,
+                'message' => $result['metadata']['reason'] ?? 'Unknown error setting reseller limit'
+            ];
+        }
+
+        return [
+            'success' => true
         ];
     }
 
