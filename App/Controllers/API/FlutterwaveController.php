@@ -770,7 +770,7 @@ class FlutterwaveController{
         $body = [
             "domain" => [
                 "duration" => 1,
-                "privacy" => false,
+                "privacy" => "off",
 
                 "registrant_contact" => [
                     "name" => "osemen silas",
