@@ -766,7 +766,7 @@ class FlutterwaveController{
 
         $url = "https://api.dynadot.com/restful/v2/domains/{$domain}/register";
 
-        if ($tld == "ca"){
+        if ($tld == "ca") {
             $body = [
                 "domain" => [
                     "duration" => 1,
@@ -785,13 +785,14 @@ class FlutterwaveController{
                     ],
 
                     "contact_extension" => [
-                        "whois_type" => "citizen",
+                        "whois_type" => "partnership",
                         "cira_language" => "english",
                         "accept_cira_agreement" => true,
                         "tld" => "ca"
-                    ],
+                    ]
+                ]
             ];
-        }else{
+        } else {
             $body = [
                 "domain" => [
                     "duration" => 1,
