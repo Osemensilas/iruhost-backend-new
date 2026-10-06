@@ -766,25 +766,55 @@ class FlutterwaveController{
 
         $url = "https://api.dynadot.com/restful/v2/domains/{$domain}/register";
 
-        // Request body
-        $body = [
-            "domain" => [
-                "duration" => 1,
-                "privacy" => "off",
+        if ($tld == "ca"){
+            $body = [
+                "domain" => [
+                    "duration" => 1,
+                    "privacy" => "off",
 
-                "registrant_contact" => [
-                    "name" => "osemen silas",
-                    "email" => "osemensilas@gmail.com",
-                    "phone_number" => "09054060454",
-                    "phone_cc" => "234",
-                    "address1" => "Lord Shepher Street",
-                    "city" => "Abuja",
-                    "state" => "FCT",
-                    "zip" => "900001",
-                    "country" => "NG"
+                    "registrant_contact" => [
+                        "name" => "osemen silas",
+                        "email" => "osemensilas@gmail.com",
+                        "phone_number" => "09054060454",
+                        "phone_cc" => "234",
+                        "address1" => "Lord Shepher Street",
+                        "city" => "Abuja",
+                        "state" => "FCT",
+                        "zip" => "900001",
+                        "country" => "NG"
+                    ],
+
+                    "contact_extension" => [
+                        "whois_type" => "corporation",
+                        "cira_language" => "english",
+                        "accept_cira_agreement" => true,
+                        "tld" => "ca"
+                    ]
                 ]
-            ]
-        ];
+            ];
+        }else{
+            $body = [
+                "domain" => [
+                    "duration" => 1,
+                    "privacy" => "off",
+
+                    "registrant_contact" => [
+                        "name" => "osemen silas",
+                        "email" => "osemensilas@gmail.com",
+                        "phone_number" => "09054060454",
+                        "phone_cc" => "234",
+                        "address1" => "Lord Shepher Street",
+                        "city" => "Abuja",
+                        "state" => "FCT",
+                        "zip" => "900001",
+                        "country" => "NG"
+                    ]
+                ]
+            ];
+        }
+
+        // Request body
+        
 
         $requestBody = json_encode($body);
 
