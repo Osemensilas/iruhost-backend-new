@@ -775,17 +775,17 @@ class FlutterwaveController{
                     "registrant_contact" => [
                         "name" => "osemen silas",
                         "email" => "osemensilas@gmail.com",
-                        "phone_number" => "09054060454",
-                        "phone_cc" => "234",
-                        "address1" => "Lord Shepher Street",
-                        "city" => "Abuja",
-                        "state" => "FCT",
-                        "zip" => "900001",
-                        "country" => "NG"
+                        "phone_number" => "4165551234",
+                        "phone_cc" => "1",
+                        "address1" => "123 Example Street",
+                        "city" => "Toronto",
+                        "state" => "ON",
+                        "zip" => "M5V 2T6",
+                        "country" => "CA",
                     ],
 
                     "contact_extension" => [
-                        "whois_type" => "partnership",
+                        "whois_type" => "citizen",
                         "cira_language" => "english",
                         "accept_cira_agreement" => true,
                         "tld" => "ca"
