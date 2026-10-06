@@ -818,6 +818,11 @@ class FlutterwaveController{
 
         $requestBody = json_encode($body);
 
+        echo "<pre>";
+        echo json_encode($body, JSON_PRETTY_PRINT);
+        echo "</pre>";
+        exit;
+
         // Generate UUID for X-Request-ID
         $xRequestId = sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
