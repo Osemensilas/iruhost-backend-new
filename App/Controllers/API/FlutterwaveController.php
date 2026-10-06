@@ -31,6 +31,7 @@ class FlutterwaveController{
     protected $mailcowApi;
     protected $mailCowUrl;
     protected $dynadotApiKey;
+    protected $dynadotApiSecret;
     protected $referralPercentage;
     protected $bonus;
 
@@ -57,6 +58,7 @@ class FlutterwaveController{
         $this->whogohostUsername = $_ENV['WHOGOHOST_USERNAME'] ?? null;
         $this->whogohostApi = $_ENV['WHOGOHOST_API'] ?? null;
         $this->dynadotApiKey = $_ENV['DYNADOT_API_PRODUCTION_KEY'] ?? null;
+        $this->dynadotApiSecret = $_ENV['DYNADOT_SECRETE_KEY'] ?? null;
         $this->referralPercentage = 0.25;
         $this->bonus = 0;
     }
