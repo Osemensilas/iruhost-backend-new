@@ -785,12 +785,11 @@ class FlutterwaveController{
                     ],
 
                     "contact_extension" => [
-                        "whois_type" => "corporation",
+                        "whois_type" => "citizen",
                         "cira_language" => "english",
                         "accept_cira_agreement" => true,
                         "tld" => "ca"
-                    ]
-                ]
+                    ],
             ];
         }else{
             $body = [
