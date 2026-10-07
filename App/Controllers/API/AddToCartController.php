@@ -102,7 +102,7 @@ class AddToCartController{
             "domainDuration" => $domainDuration
         ]);
 
-        if (empty($domainRenew)) {
+        if (empty($domainDuration)) {
             echo json_encode(['status' => 'error', 'message' => 'Missing domain details']);
             return;
         }
