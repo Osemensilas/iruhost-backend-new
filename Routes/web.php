@@ -52,7 +52,8 @@ $router->post('/api/add-custom-website-to-cart', [AddToCartController::class, 'A
 $router->post('/api/domain-search', [DomainController::class, 'DomainSearch']);
 $router->post('/api/domain-check', [DomainController::class, 'ExistingCheck']);
 $router->post('/api/single-search', [DomainController::class, 'SingleSearch']);
-$router->get('/api/get-domain-prices', [DomainController::class, 'getDomainPrices']);
+$router->get('/api/get-domain-prices', [DomainController::class, 'GetDomainPrices']);
+$router->get('/api/get-iruap-domain', [DomainController::class, 'GetIruapDomain']);
 
 /*website Routes*/
 $router->post('/api/get-websites', [WebsiteController::class, 'WebList']);

@@ -63,8 +63,7 @@ class FlutterwaveController{
         $this->bonus = 0;
     }
 
-    public function PaymentSuccessful()
-    {
+    public function PaymentSuccessful(){
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode([
                 'status' => 'error',

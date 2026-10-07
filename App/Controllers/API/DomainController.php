@@ -356,4 +356,54 @@ class DomainController{
             ]);
         }
     }
+
+    public function getIruapDomain(){
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
+            return;
+        }
+
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
+            return;
+        }
+
+        // Fetch all domains
+        $stmt = $this->pdo->prepare("SELECT domain FROM `products` WHERE user_id = ? AND product = ?");
+        $stmt->execute([$this->userId, 'domain']);
+        $domainRows = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (!$domainRows) {
+            echo json_encode(['status' => 'error', 'message' => 'No domains found']);
+            return;
+        }
+
+        // Fetch all hosting domains
+        $stmt = $this->pdo->prepare("SELECT domain FROM `products` WHERE user_id = ? AND product = ?");
+        $stmt->execute([$this->userId, 'hosting']);
+        $hostingRows = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $validDomains = [];
+
+        foreach ($domainRows as $iruapDomain) {
+            // Check if domain is not in hosting list and is valid
+            if (!in_array($iruapDomain, $hostingRows, true) &&
+                preg_match('/^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z]{2,})+$/', $iruapDomain)) {
+                
+                $validDomains[] = $iruapDomain;
+            }
+        }
+
+        if ($validDomains) {
+            echo json_encode([
+                'status' => 'success',
+                'domains' => $validDomains
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'No valid domains found'
+            ]);
+        }
+    }
 }
