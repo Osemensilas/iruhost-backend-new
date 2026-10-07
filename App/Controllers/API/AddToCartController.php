@@ -95,17 +95,17 @@ class AddToCartController{
         $hostingPrice = $data['hostingPrice'] ?? null;
         $hostingRenew = $data['billing'] ?? null;
 
-        if (empty($domainName) || empty($domainPrice) || empty($domainRenew) || empty($domainDuration)) {
-            echo json_encode(['status' => 'error', 'message' => 'Missing domain details']);
-            return;
-        }
-
         echo json_encode([
             "domainName" => $domainName,
             "domainPrice" => $domainPrice,
             "domainRenew" => $domainRenew,
             "domainDuration" => $domainDuration
         ]);
+
+        if (empty($domainName)) {
+            echo json_encode(['status' => 'error', 'message' => 'Missing domain details']);
+            return;
+        }
 
         if ($domainName == '-'){
             echo json_encode(['status' => 'error', 'message' => 'Missing domain details']);
