@@ -293,7 +293,7 @@ class DomainController{
         ]);
     }
 
-    public function getDomainPrices(){
+    public function GetDomainPrices(){
         if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
             echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
             return;
@@ -357,7 +357,7 @@ class DomainController{
         }
     }
 
-    public function getIruapDomain(){
+    public function GetIruapDomain(){
         if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
             echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
             return;
