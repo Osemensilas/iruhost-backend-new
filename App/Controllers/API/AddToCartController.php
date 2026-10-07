@@ -81,6 +81,8 @@ class AddToCartController{
 
         $data = json_decode(file_get_contents("php://input"), true);
 
+        print_r($data);
+
         $domainName = $data['domainName'] ?? null;
         $domainPrice = $data['domainPrice'] ?? null;
         $domainRenew = $data['domainRenew'] ?? null;
