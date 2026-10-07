@@ -9,6 +9,7 @@ use PDO;
 class DomainController{
     protected $pdo;
     protected $dynadotApiKey;
+    protected $userId;
 
     public function __construct()
     {
@@ -16,6 +17,7 @@ class DomainController{
         $dotenv->load();
         $this->pdo = DB::connection();
         $this->dynadotApiKey = $_ENV['DYNADOT_API_PRODUCTION_KEY'] ?? null;
+        $this->userId = $_SESSION['user']['user_id'] ?? null;
     }
 
     public function DomainSearch(){
