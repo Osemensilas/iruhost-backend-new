@@ -47,6 +47,8 @@ $router->post('/api/add-to-cart-ssl', [AddToCartController::class, 'AddSSL']);
 $router->post('/api/add-to-cart-email', [AddToCartController::class, 'AddEmail']);
 $router->post('/api/add-website-to-cart', [AddToCartController::class, 'AddWebsite']);
 $router->post('/api/add-custom-website-to-cart', [AddToCartController::class, 'AddCustomWebsite']);
+/*Free Cart*/
+$router->post('/api/first-month', [AddToCartController::class, 'FirstMonth']);
 
 /*Domain Routes*/
 $router->post('/api/domain-search', [DomainController::class, 'DomainSearch']);

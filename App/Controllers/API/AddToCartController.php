@@ -477,4 +477,24 @@ class AddToCartController{
             'message' => 'Added to cart',
         ]);
     }
+
+    public function FirstMonth(){
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $id = uniqid("free_id_");
+        $status = "successful";
+        $ref = uniqid("free_ref_");
+
+        echo json_encode([
+            "id": $id,
+            "ref": $ref,
+            "status": $status,
+            "message": "Generated successfully"
+        ]);
+    }
 }
