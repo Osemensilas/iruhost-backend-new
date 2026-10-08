@@ -161,6 +161,26 @@ class AddToCartController{
             $renewPrice = 1600;
             $hostingPrice = 0;
         }
+
+        if ($hostingName === "Starter" && $hostingRenew === "month"){
+            $renewPrice = 1500;
+            $hostingPrice = 0;
+        }
+
+        if ($hostingName === "Growth" && $hostingRenew === "month"){
+            $renewPrice = 2500;
+            $hostingPrice = 0;
+        }
+
+        if ($hostingName === "Pro" && $hostingRenew === "month"){
+            $renewPrice = 5000;
+            $hostingPrice = 0;
+        }
+
+        if ($hostingName === "Enterprise" && $hostingRenew === "month"){
+            $renewPrice = 9000;
+            $hostingPrice = 0;
+        }
         
         $stmt = $this->pdo->prepare("INSERT INTO `cart`
             (`user_id`, `cart_id`, `product`, `product_name`, `amount`, `renew`, `billing`, `domain`, `currency`)
@@ -203,6 +223,26 @@ class AddToCartController{
 
         if ($hostingName === "Plus" && $hostingRenew === "month"){
             $renewPrice = 1600;
+            $hostingPrice = 0;
+        }
+
+        if ($hostingName === "Starter" && $hostingRenew === "month"){
+            $renewPrice = 1500;
+            $hostingPrice = 0;
+        }
+
+        if ($hostingName === "Growth" && $hostingRenew === "month"){
+            $renewPrice = 2500;
+            $hostingPrice = 0;
+        }
+
+        if ($hostingName === "Pro" && $hostingRenew === "month"){
+            $renewPrice = 5000;
+            $hostingPrice = 0;
+        }
+
+        if ($hostingName === "Enterprise" && $hostingRenew === "month"){
+            $renewPrice = 9000;
             $hostingPrice = 0;
         }
         
