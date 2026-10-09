@@ -491,10 +491,10 @@ class AddToCartController{
         $ref = uniqid("free_ref_");
 
         echo json_encode([
-            "id": $id,
-            "ref": $ref,
-            "status": $status,
-            "message": "Generated successfully"
+            "id" => $id,
+            "ref" => $ref,
+            "status" => $status,
+            "message" => "Generated successfully"
         ]);
     }
 }
