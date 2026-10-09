@@ -70,6 +70,7 @@ $router->get('/api/user-email', [UserProductController::class, 'EmailList']);
 $router->get('/api/user-ssl', [UserProductController::class, 'SslList']);
 $router->get('/api/user-app', [UserProductController::class, 'AppList']);
 $router->get('/api/verify-renewal', [UserProductController::class, 'VerifyRenewal']);
+$router->post('/api/cpanel-login', [UserProductController::class, 'AutoCpanelLogin']);
 
 /*User Tickets*/
 $router->post('/api/send-ticket', [SupportController::class, 'OpenTicket']);
