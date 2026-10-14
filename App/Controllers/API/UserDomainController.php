@@ -37,79 +37,81 @@ class UserDomainController
 
         $data = json_decode(file_get_contents("php://input"), true);
 
-        $dns1 = $data["nameserver1"];
-        $dns2 = $data["nameserver2"];
-        $dns3 = $data["nameserver3"];
-        $dns4 = $data["nameserver4"];
-        $domainName = $data["domain"];
-        $provider =  $data["dnsProvide"];
-        if ($provider === "iruhost"){
-            $dns1 = $data["nameserver5"];
-            $dns2 = $data["nameserver6"];
-        }
+        print_r($data);
 
-        $tdl = substr($domainName, strpos($domainName, '.') + 1);
-        $sld = substr($domainName, 0, strpos($domainName, '.'));
+        // $dns1 = $data["nameserver1"];
+        // $dns2 = $data["nameserver2"];
+        // $dns3 = $data["nameserver3"];
+        // $dns4 = $data["nameserver4"];
+        // $domainName = $data["domain"];
+        // $provider =  $data["dnsProvide"];
+        // if ($provider === "iruhost"){
+        //     $dns1 = $data["nameserver5"];
+        //     $dns2 = $data["nameserver6"];
+        // }
 
-        $tlds = ['ng', 'com.ng', 'org.ng', 'gov.ng', 'edu.ng', 'net.ng', 'sch.ng', 'name.ng', 'mobi.ng', 'mil.ng', 'i.ng'];
+        // $tdl = substr($domainName, strpos($domainName, '.') + 1);
+        // $sld = substr($domainName, 0, strpos($domainName, '.'));
 
-        if (in_array($tdl, $tlds)){
-            $endpoint = "https://www.whogohost.com/host/modules/addons/DomainsReseller/api/index.php";
-            $action = "/domains/$domainName/nameservers";
-            $params = [
-                "domain"    => $domainName,
-                "nameservers" => [
-                    $dns1,
-                    $dns2,
-                ],
-            ];
+        // $tlds = ['ng', 'com.ng', 'org.ng', 'gov.ng', 'edu.ng', 'net.ng', 'sch.ng', 'name.ng', 'mobi.ng', 'mil.ng', 'i.ng'];
 
-            $headers = [
-                "username: $this->whogohostUsername",
-                "token: ". base64_encode(hash_hmac("sha256", "$this->whogohostApi", "$this->whogohostUsername:".gmdate("y-m-d H")))
-            ];
+        // if (in_array($tdl, $tlds)){
+        //     $endpoint = "https://www.whogohost.com/host/modules/addons/DomainsReseller/api/index.php";
+        //     $action = "/domains/$domainName/nameservers";
+        //     $params = [
+        //         "domain"    => $domainName,
+        //         "nameservers" => [
+        //             $dns1,
+        //             $dns2,
+        //         ],
+        //     ];
 
-            $curl = curl_init();
+        //     $headers = [
+        //         "username: $this->whogohostUsername",
+        //         "token: ". base64_encode(hash_hmac("sha256", "$this->whogohostApi", "$this->whogohostUsername:".gmdate("y-m-d H")))
+        //     ];
 
-            curl_setopt($curl, CURLOPT_URL, "{$endpoint}{$action}");
-            curl_setopt($curl, CURLOPT_POST, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        //     $curl = curl_init();
 
-            $response = curl_exec($curl);
-            curl_close($curl);
+        //     curl_setopt($curl, CURLOPT_URL, "{$endpoint}{$action}");
+        //     curl_setopt($curl, CURLOPT_POST, true);
+        //     curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
+        //     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        //     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+        //     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
 
-            print_r($response);
+        //     $response = curl_exec($curl);
+        //     curl_close($curl);
+
+        //     print_r($response);
             
-            return;
-        }
+        //     return;
+        // }
 
-        $url = "https://reseller.enom.com/interface.asp?command=ModifyNS&uid=$this->enomUserId&pw=$this->enomApiToken&sld=$sld&tld=$tdl&ns1=$dns1&ns2=$dns2&ns3=$dns3&ns4=$dns4&responsetype=xml";
+        // $url = "https://reseller.enom.com/interface.asp?command=ModifyNS&uid=$this->enomUserId&pw=$this->enomApiToken&sld=$sld&tld=$tdl&ns1=$dns1&ns2=$dns2&ns3=$dns3&ns4=$dns4&responsetype=xml";
     
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $response = curl_exec($ch);
-        curl_close($ch);
+        // $ch = curl_init();
+        // curl_setopt($ch, CURLOPT_URL, $url);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        // $response = curl_exec($ch);
+        // curl_close($ch);
 
-        $xml = simplexml_load_string($response);
+        // $xml = simplexml_load_string($response);
 
-        $rrpCode = (int) $xml->RRPCode;
-        $rrpText = (string) $xml->RRPText;
+        // $rrpCode = (int) $xml->RRPCode;
+        // $rrpText = (string) $xml->RRPText;
 
-        if ($rrpCode === 200){
-            echo json_encode([
-                'msg' => 'success',
-                'value' => $rrpText
-            ]);
-        }else{
-            echo json_encode([
-                'msg' => 'unsuccess',
-                'value' => $rrpText
-            ]);
-        }
+        // if ($rrpCode === 200){
+        //     echo json_encode([
+        //         'msg' => 'success',
+        //         'value' => $rrpText
+        //     ]);
+        // }else{
+        //     echo json_encode([
+        //         'msg' => 'unsuccess',
+        //         'value' => $rrpText
+        //     ]);
+        // }
     }
 
     public function UpdateHost(){
