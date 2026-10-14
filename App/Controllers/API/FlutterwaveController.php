@@ -1147,8 +1147,7 @@ class FlutterwaveController{
         ];
     }
 
-    private function regEmail($productName, $billing, $cartId, $domain, $amount)
-    {
+    private function regEmail($productName, $billing, $cartId, $domain, $amount){
         $productId = uniqid('prod_');
         $product = 'email';
         $text = 'Manage';

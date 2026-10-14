@@ -14,6 +14,7 @@ use App\Controllers\API\FlutterwaveController;
 use App\Controllers\API\CommentsController;
 use App\Controllers\API\HostingComponent;
 use App\Controllers\API\MailCowController;
+use App\Controllers\API\UserDomainController;
 
 /*Session Route*/
 $router->get("/api/session", [SessionController::class, "UserSession"]);
@@ -108,3 +109,13 @@ $router->get('/api/fetch-shared-hosting', [HostingComponent::class, 'FetchShared
 $router->post('/api/create-mailcow-mail', [MailCowController::class, 'CreateEmailAccount']);
 $router->get('/api/fetch-mailcow-mail', [MailCowController::class, 'FetchEmailAccount']);
 $router->post('/api/delete-mailcow-mail', [MailCowController::class, 'DeleteEmailAccount']);
+
+/*User Domains*/
+$router->post('/api/update-dns', [UserDomainController::class, 'UpdateDns']);
+$router->post('/api/update-host', [UserDomainController::class, 'UpdateHost']);
+$router->post('/api/get-host', [UserDomainController::class, 'GetHost']);
+$router->post('/api/get-domain-details', [UserDomainController::class, 'GetDomainDetails']);
+$router->post('/api/get-domain-lock-status', [UserDomainController::class, 'GetDomainLockStatus']);
+$router->post('/api/change-domain-ownership', [UserDomainController::class, 'ChangeOwnership']);
+$router->post('/api/add-domain-manager', [UserDomainController::class, 'DomainManager']);
+$router->post('/api/unlock-domain', [UserDomainController::class, 'UnlockDomain']);
