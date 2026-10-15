@@ -195,64 +195,123 @@ class UserDomainController
         // }
     }
 
-    public function GetHost(){
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
-            return;
+    private function generateDynadotSignature(
+            string $pathAndQuery,
+            string $requestId,
+            string $requestBody = ''
+        ): string {
+            $stringToSign =
+                $this->dynadotApiKey . "\n" .
+                $pathAndQuery . "\n" .
+                $requestId . "\n" .
+                $requestBody;
+
+            return base64_encode(
+                hash_hmac(
+                    'sha256',
+                    $stringToSign,
+                    $this->dynadotApiKey,
+                    true
+                )
+            );
         }
 
-        $data = json_decode(file_get_contents("php://input"), true);
+        public function GetHost()
+        {
+            header('Content-Type: application/json');
 
-        $domainName = $data["domain"];
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Invalid request method'
+                ]);
+                return;
+            }
 
-        $url = 'https://api.dynadot.com/restful/v2/domains/' . urlencode($domainName) . '/records';
+            $data = json_decode(file_get_contents('php://input'), true);
+            $domainName = strtolower(trim($data['domain'] ?? ''));
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Accept: application/json",
-            "Authorization: Bearer " . $this->dynadotApiKey,
-        ]);
-        $response = curl_exec($ch);
-        curl_close($ch);
+            if (!is_string($domainName) ||
+                !preg_match('/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i', $domainName)) {
+                http_response_code(400);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'A valid domain is required'
+                ]);
+                return;
+            }
 
-        $result = json_decode($response, true);
+            $pathAndQuery = '/restful/v2/domains/' .
+                rawurlencode($domainName) . '/records';
 
-        print_r($result);
+            $url = 'https://api.dynadot.com' . $pathAndQuery;
 
-        // $tdl = substr($domainName, strpos($domainName, '.') + 1);
-        // $sld = substr($domainName, 0, strpos($domainName, '.'));
+            // UUID for this request
+            $requestId = sprintf(
+                '%s-%s-4%s-%s-%s',
+                bin2hex(random_bytes(4)),
+                bin2hex(random_bytes(2)),
+                bin2hex(random_bytes(2)),
+                dechex((ord(random_bytes(1)) & 0x3f) | 0x80) .
+                    bin2hex(random_bytes(1)),
+                bin2hex(random_bytes(6))
+            );
 
-        // $url = "https://reseller.enom.com/interface.asp?command=GetHosts&uid=$this->enomUserId&pw=$this->enomApiToken&SLD=$sld&TLD=$tdl&ResponseType=XML";
+            $signature = $this->generateDynadotSignature(
+                $pathAndQuery,
+                $requestId,
+                ''
+            );
 
-        // $ch = curl_init();
-        // curl_setopt($ch, CURLOPT_URL, $url);
-        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        // $response = curl_exec($ch);
-        // curl_close($ch);
+            $ch = curl_init($url);
 
-        // $xml = simplexml_load_string($response);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTPHEADER => [
+                    'Accept: application/json',
+                    'Authorization: Bearer ' . $this->dynadotApiKey,
+                    'X-Request-ID: ' . $requestId,
+                    'X-Signature: ' . $signature
+                ]
+            ]);
 
-        // if (isset($xml->host)) {
-        //     foreach ($xml->host as $host) {
-        //         $name = (string) $host->name;
-        //         $type = (string) $host->type;
-        //         $address = (string) $host->address;
+            $response = curl_exec($ch);
+            $curlError = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
 
-        //         $hostRecords[] = [
-        //             'name' => $name,
-        //             'type' => $type,
-        //             'address' => $address
-        //         ];
-        //     }
+            if ($response === false) {
+                http_response_code(502);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Dynadot connection failed',
+                    'details' => $curlError
+                ]);
+                return;
+            }
 
-        //     echo json_encode([
-        //         "status" => "success",
-        //         "response" => $hostRecords
-        //     ]);
-        // }
-    }
+            $result = json_decode($response, true);
+
+            if ($httpCode >= 200 && $httpCode < 300) {
+                echo json_encode([
+                    'status' => 'success',
+                    'domain' => $domainName,
+                    'response' => $result
+                ]);
+                return;
+            }
+
+            http_response_code(502);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Dynadot API request failed',
+                'http_code' => $httpCode,
+                'details' => $result ?? $response
+            ]);
+        }
 
     public function GetDomainDetails(){
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
