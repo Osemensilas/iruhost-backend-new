@@ -62,6 +62,8 @@ class UserDomainController
 
         $data = json_decode($response, true);
 
+        print_r($data);
+
         // $tdl = substr($domainName, strpos($domainName, '.') + 1);
         // $sld = substr($domainName, 0, strpos($domainName, '.'));
 
