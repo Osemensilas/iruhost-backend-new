@@ -30,39 +30,125 @@ class UserDomainController
     }
 
     public function UpdateDns(){
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
+            http_response_code(405);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Invalid request method'
+            ]);
             return;
         }
 
         $data = json_decode(file_get_contents("php://input"), true);
 
-        $dns1 = $data["nameserver1"];
-        $dns2 = $data["nameserver2"];
-        $dns3 = $data["nameserver3"];
-        $dns4 = $data["nameserver4"];
-        $domainName = $data["domain"];
-        $provider =  $data["dnsProvide"];
-        if ($provider === "iruhost"){
-            $dns1 = $data["nameserver5"];
-            $dns2 = $data["nameserver6"];
+        if (!is_array($data) || empty($data['domain'])) {
+            http_response_code(400);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Domain is required'
+            ]);
+            return;
         }
 
-        $api = "https://api.dynadot.com/api3.xml?key=$this->dynadotApiKey&command=set_ns&domain=$domainName&ns0=$dns1&ns1=$dns2&ns2=$dns3&ns3=$dns4";
+        $domainName = strtolower(trim($data['domain']));
+        $provider = $data['dnsProvide'] ?? '';
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $api);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Accept: application/json",
-            "Authorization: Bearer " . $this->dynadotApiKey,
+        if ($provider === 'iruhost') {
+            $nameservers = [
+                'ns1.iruhost.com',
+                'ns2.iruhost.com'
+            ];
+        } else {
+            $nameservers = [];
+
+            for ($i = 1; $i <= 4; $i++) {
+                $ns = trim($data["nameserver$i"] ?? '');
+
+                if ($ns !== '') {
+                    $nameservers[] = $ns;
+                }
+            }
+        }
+
+        if (count($nameservers) < 2) {
+            http_response_code(400);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'At least two nameservers are required'
+            ]);
+            return;
+        }
+
+        // Build Dynadot API parameters.
+        $params = [
+            'key' => $this->dynadotApiKey,
+            'command' => 'set_ns',
+            'domain' => $domainName
+        ];
+
+        foreach ($nameservers as $index => $nameserver) {
+            $params['ns' . $index] = $nameserver;
+        }
+
+        $url = 'https://api.dynadot.com/api3.json?'
+            . http_build_query($params);
+
+        $ch = curl_init($url);
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTPHEADER => [
+                'Accept: application/json'
+            ]
         ]);
+
         $response = curl_exec($ch);
+        $curlError = curl_error($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
         curl_close($ch);
 
-        $data = json_decode($response, true);
+        if ($response === false || $curlError !== '') {
+            http_response_code(502);
 
-        print_r($data);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Could not connect to Dynadot',
+                'details' => $curlError
+            ]);
+            return;
+        }
+
+        $result = json_decode($response, true);
+        $apiResult = $result['SetNsResponse'] ?? [];
+
+        if (
+            $httpCode >= 200 &&
+            $httpCode < 300 &&
+            ($apiResult['Status'] ?? '') === 'success' &&
+            (string)($apiResult['ResponseCode'] ?? '') === '0'
+        ) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Nameservers updated successfully',
+                'domain' => $domainName,
+                'nameservers' => $nameservers
+            ]);
+        } else {
+            http_response_code(502);
+
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Dynadot could not update the nameservers',
+                'details' => $apiResult['Error']
+                    ?? $apiResult['Status']
+                    ?? 'Unexpected API response'
+            ]);
+}
+
 
         // $tdl = substr($domainName, strpos($domainName, '.') + 1);
         // $sld = substr($domainName, 0, strpos($domainName, '.'));
