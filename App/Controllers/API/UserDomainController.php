@@ -205,37 +205,60 @@ class UserDomainController
 
         $domainName = $data["domain"];
 
-        $tdl = substr($domainName, strpos($domainName, '.') + 1);
-        $sld = substr($domainName, 0, strpos($domainName, '.'));
+        $params = [
+            'key' => $this->dynadotApiKey,
+            'command' => 'get_dns',
+            'domain' => $domainName,
+        ];
 
-        $url = "https://reseller.enom.com/interface.asp?command=GetHosts&uid=$this->enomUserId&pw=$this->enomApiToken&SLD=$sld&TLD=$tdl&ResponseType=XML";
+        $url = 'https://api.dynadot.com/api3.json?' .
+            http_build_query($params);
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $ch = curl_init($url);
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+        ]);
+
         $response = curl_exec($ch);
         curl_close($ch);
 
-        $xml = simplexml_load_string($response);
+        $result = json_decode($response, true);
 
-        if (isset($xml->host)) {
-            foreach ($xml->host as $host) {
-                $name = (string) $host->name;
-                $type = (string) $host->type;
-                $address = (string) $host->address;
+        print_r($result);
 
-                $hostRecords[] = [
-                    'name' => $name,
-                    'type' => $type,
-                    'address' => $address
-                ];
-            }
+        // $tdl = substr($domainName, strpos($domainName, '.') + 1);
+        // $sld = substr($domainName, 0, strpos($domainName, '.'));
 
-            echo json_encode([
-                "status" => "success",
-                "response" => $hostRecords
-            ]);
-        }
+        // $url = "https://reseller.enom.com/interface.asp?command=GetHosts&uid=$this->enomUserId&pw=$this->enomApiToken&SLD=$sld&TLD=$tdl&ResponseType=XML";
+
+        // $ch = curl_init();
+        // curl_setopt($ch, CURLOPT_URL, $url);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        // $response = curl_exec($ch);
+        // curl_close($ch);
+
+        // $xml = simplexml_load_string($response);
+
+        // if (isset($xml->host)) {
+        //     foreach ($xml->host as $host) {
+        //         $name = (string) $host->name;
+        //         $type = (string) $host->type;
+        //         $address = (string) $host->address;
+
+        //         $hostRecords[] = [
+        //             'name' => $name,
+        //             'type' => $type,
+        //             'address' => $address
+        //         ];
+        //     }
+
+        //     echo json_encode([
+        //         "status" => "success",
+        //         "response" => $hostRecords
+        //     ]);
+        // }
     }
 
     public function GetDomainDetails(){
