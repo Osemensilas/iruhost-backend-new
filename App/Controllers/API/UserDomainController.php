@@ -15,6 +15,8 @@ class UserDomainController
     protected $enomApiToken;
     protected $whogohostUsername;
     protected $whogohostApi;
+    protected $iruHostDns1;
+    protected $iruHostDns2;
 
     public function __construct()
     {
@@ -27,6 +29,8 @@ class UserDomainController
         $this->enomApiToken = $_ENV['ENOM_API_TOKEN'] ?? null;
         $this->whogohostUsername = $_ENV['WHOGOHOST_USERNAME'] ?? null;
         $this->whogohostApi = $_ENV['WHOGOHOST_API'] ?? null;
+        $this->iruHostDns1 = $_ENV['IRUHOST_DNS1'] ?? null;
+        $this->iruHostDns2 = $_ENV['IRUHOST_DNS2'] ?? null;
     }
 
     public function UpdateDns(){
@@ -56,8 +60,8 @@ class UserDomainController
 
         if ($provider === 'iruhost') {
             $nameservers = [
-                'ns1.iruhost.com',
-                'ns2.iruhost.com'
+                $this->iruHostDns1 ?? 'ns1.iruhost.com',
+                $this->iruHostDns2 ?? 'ns2.iruhost.com'
             ];
         } else {
             $nameservers = [];
