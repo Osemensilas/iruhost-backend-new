@@ -37,18 +37,20 @@ class UserDomainController
 
         $data = json_decode(file_get_contents("php://input"), true);
 
-        print_r($data);
+        $dns1 = $data["nameserver1"];
+        $dns2 = $data["nameserver2"];
+        $dns3 = $data["nameserver3"];
+        $dns4 = $data["nameserver4"];
+        $domainName = $data["domain"];
+        $provider =  $data["dnsProvide"];
+        if ($provider === "iruhost"){
+            $dns1 = $data["nameserver5"];
+            $dns2 = $data["nameserver6"];
+        }
 
-        // $dns1 = $data["nameserver1"];
-        // $dns2 = $data["nameserver2"];
-        // $dns3 = $data["nameserver3"];
-        // $dns4 = $data["nameserver4"];
-        // $domainName = $data["domain"];
-        // $provider =  $data["dnsProvide"];
-        // if ($provider === "iruhost"){
-        //     $dns1 = $data["nameserver5"];
-        //     $dns2 = $data["nameserver6"];
-        // }
+        $api = "https://api.dynadot.com/api3.xml?key=$this->dynadotApiKey&command=set_ns&domain=$domainName&ns0=$dns1&ns1=$dns2&ns2=$dns3&ns3=$dns4";
+
+        print_r($api);
 
         // $tdl = substr($domainName, strpos($domainName, '.') + 1);
         // $sld = substr($domainName, 0, strpos($domainName, '.'));
