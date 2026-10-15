@@ -205,22 +205,15 @@ class UserDomainController
 
         $domainName = $data["domain"];
 
-        $params = [
-            'key' => $this->dynadotApiKey,
-            'command' => 'get_dns',
-            'domain' => $domainName,
-        ];
+        $url = 'https://api.dynadot.com/restful/v2/domains/' . urlencode($domainName) . '/records';
 
-        $url = 'https://api.dynadot.com/api3.json?' .
-            http_build_query($params);
-
-        $ch = curl_init($url);
-
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 30,
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Accept: application/json",
+            "Authorization: Bearer " . $this->dynadotApiKey,
         ]);
-
         $response = curl_exec($ch);
         curl_close($ch);
 
