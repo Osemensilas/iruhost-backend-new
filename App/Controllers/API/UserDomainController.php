@@ -50,7 +50,17 @@ class UserDomainController
 
         $api = "https://api.dynadot.com/api3.xml?key=$this->dynadotApiKey&command=set_ns&domain=$domainName&ns0=$dns1&ns1=$dns2&ns2=$dns3&ns3=$dns4";
 
-        print_r($api);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $api);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Accept: application/json",
+            "Authorization: Bearer " . $this->dynadotApiKey,
+        ]);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($response, true);
 
         // $tdl = substr($domainName, strpos($domainName, '.') + 1);
         // $sld = substr($domainName, 0, strpos($domainName, '.'));
