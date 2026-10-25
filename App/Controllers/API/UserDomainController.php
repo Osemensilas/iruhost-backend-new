@@ -195,29 +195,24 @@ class UserDomainController
         // }
     }
 
-    private function generateDynadotSignature(
-            string $pathAndQuery,
-            string $requestId,
-            string $requestBody = ''
-        ): string {
-            $stringToSign =
-                $this->dynadotApiKey . "\n" .
-                $pathAndQuery . "\n" .
-                $requestId . "\n" .
-                $requestBody;
+    private function generateDynadotSignature(string $pathAndQuery, string $requestId, string $requestBody = ''): string {
+        $stringToSign =
+            $this->dynadotApiKey . "\n" .
+            $pathAndQuery . "\n" .
+            $requestId . "\n" .
+            $requestBody;
 
-            return base64_encode(
-                hash_hmac(
-                    'sha256',
-                    $stringToSign,
-                    $this->dynadotApiKey,
-                    true
-                )
-            );
-        }
+        return base64_encode(
+            hash_hmac(
+                'sha256',
+                $stringToSign,
+                $this->dynadotApiKey,
+                true
+            )
+        );
+    }
 
-        public function GetHost()
-        {
+        public function GetHost(){
             header('Content-Type: application/json');
 
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -313,6 +308,7 @@ class UserDomainController
             ]);
         }
 
+    
     public function GetDomainDetails(){
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
