@@ -2072,7 +2072,6 @@ class FlutterwaveController{
             $mail->Port = $this->smtpPort;
 
             $mail->addAddress($userEmail, $clientName);
-            $mail->addAddress($email, $name);
 
             $mail->isHTML(true);
             $mail->Subject = 'Your cPanel Account Information';
