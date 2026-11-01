@@ -1452,7 +1452,7 @@ class FlutterwaveController{
             }
 
             $userEmail = $userRow['email'];
-            $clientName = $userRow['name'];
+            $clientName = $userRow['firstname'] . " " . $userRow['lastname'];
 
             // Generate unique cPanel username (max 16 characters)
             $username = substr($domain, 0, strpos($domain, '.') ?: strlen($domain));
