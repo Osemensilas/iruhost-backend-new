@@ -35,6 +35,13 @@ class FlutterwaveController{
     protected $referralPercentage;
     protected $bonus;
 
+    protected $pdo;
+    protected $smtpPassword;
+    protected $smtpUsername;
+    protected $smtpHost;
+    protected $smtpPort;
+    protected $smtpEncryption;
+
     public function __construct(){
 
         $dotenv = Dotenv::createImmutable(__DIR__ . '/../../../');
@@ -53,6 +60,12 @@ class FlutterwaveController{
         $this->encryptionKey = hash('sha256', $_ENV['ENCRYPTION_KEY']);
         $this->encryptionIV = substr(hash('sha256', $_ENV['ENCRYPTION_IV']), 0, 16);
         $this->resendApiCode = $_ENV['RESEND_API_KEY'] ?? null;
+
+        $this->smtpHost = $_ENV['SMTP_HOST'] ?? null;
+        $this->smtpPort = $_ENV['SMTP_PORT'] ?? null;
+        $this->smtpUsername = $_ENV['SMTP_USERNAME'] ?? null;
+        $this->smtpPassword = $_ENV['SMTP_PASSWORD'] ?? null;
+        $this->smtpEncryption = $_ENV['SMTP_ENCRYPTION'] ?? null;
         //$this->resend = Resend::client($this->resendApiCode);
         $this->server = $_ENV['IP'] ?? null;
         $this->whogohostUsername = $_ENV['WHOGOHOST_USERNAME'] ?? null;
@@ -2050,24 +2063,21 @@ class FlutterwaveController{
     
         try {
             $mail = new PHPMailer(true);
-
-            // Server settings
+            
             $mail->isSMTP();
-            $mail->Host       = 'iruhost.com';
-            $mail->SMTPAuth   = true;
-            $mail->Username   = 'noreply@iruhost.com';
-            $mail->Password   = $_ENV['MAIL_PASSWORD'];  // Store password in .env
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;  // SSL encryption for port 465
-            $mail->Port       = 465; // Use 465 for SSL
+            $mail->Host = $this->smtpHost;
+            $mail->SMTPAuth = true;
+            $mail->Username = $this->smtpUsername;
+            $mail->Password = $this->smtpPassword;
+            $mail->SMTPSecure = $this->smtpEncryption;
+            $mail->Port = $this->smtpPort;
 
-            // Recipients
-            $mail->setFrom('noreply@iruhost.com', 'IruHost');
             $mail->addAddress($userEmail, $clientName);
-            $mail->addReplyTo('contact@iruhost.com', 'IruHost Support');
+            $mail->addAddress($email, $name);
 
-            // Content
             $mail->isHTML(true);
             $mail->Subject = 'Your cPanel Account Information';
+            // Content
             $mail->Body    = "
             <div style='font-family: Arial, sans-serif; background-color: #f6f8fb; padding: 30px;'>
                 <div style='max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 30px;'>
