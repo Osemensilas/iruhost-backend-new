@@ -35,7 +35,6 @@ class FlutterwaveController{
     protected $referralPercentage;
     protected $bonus;
 
-    protected $pdo;
     protected $smtpPassword;
     protected $smtpUsername;
     protected $smtpHost;
