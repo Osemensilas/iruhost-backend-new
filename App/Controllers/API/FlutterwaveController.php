@@ -1512,22 +1512,23 @@ class FlutterwaveController{
                 throw new Exception('Error updating product url');
             }
 
-            if ($productName === "reseller_growth" || $productName === "reseller_starter"
-            || $productName === "reseller_pro" || $productName === "reseller_enterprise"
-            ){
+            $whmCreate = false;
+
+            if (in_array($productName, ['reseller_starter', 'reseller_growth', 'reseller_pro', 'reseller_enterprise'], true)) {
                 $limits = [
                     'reseller_starter'    => 25,
                     'reseller_growth'     => 50,
                     'reseller_pro'        => 75,
                     'reseller_enterprise' => 100,
                 ];
-                $createWHMResponse = $this->converToWHM($username, $limits[$productName]);
-            }
 
-            if ($createWHMResponse['success']) {
-                $whmCreate = true;
-            }else{
-                $whmCreate = false;
+                try {
+                    $createWHMResponse = $this->converToWHM($username, $limits[$productName]);
+                    $whmCreate = !empty($createWHMResponse['success']);
+                } catch (Exception $e) {
+                    error_log("Reseller conversion failed for {$username}: " . $e->getMessage());
+                    $whmCreate = false;
+                }
             }
 
             // Send email notification
