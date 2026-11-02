@@ -603,6 +603,8 @@ class FlutterwaveController{
             $webBonus
         );
 
+        $this->SendTransactionMail(date('Y-m-d'));
+
         /*
         |--------------------------------------------------------------------------
         | Final response
@@ -1417,7 +1419,6 @@ class FlutterwaveController{
     }
     
     private function regHosting($expiryDate, $productName, $billing, $cartId, $domain, $cText, $amount){
-    // Start transaction for data consistency
         $this->pdo->beginTransaction();
         
         try {
@@ -2071,6 +2072,8 @@ class FlutterwaveController{
             $mail->SMTPSecure = $this->smtpEncryption;
             $mail->Port = $this->smtpPort;
 
+            $mail->setFrom('noreply@iruhost.com', 'Cpanel Details');
+
             $mail->addAddress($userEmail, $clientName);
 
             $mail->isHTML(true);
@@ -2146,6 +2149,202 @@ class FlutterwaveController{
             error_log("Email sending failed: {$mail->ErrorInfo}");
             
             // Optionally return false or throw exception
+            return false;
+        }
+    }
+
+    private function SendTransactionMail($date){
+        // Fetch transactions for the selected day
+        $stmt = $this->pdo->prepare("SELECT * FROM transactions WHERE user_id = ? AND status = 'successful' AND created_at >= ? AND created_at < DATE_ADD(?, INTERVAL 1 DAY) ORDER BY created_at ASC");
+        $stmt->execute([$this->userId, $date, $date]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($rows)) {
+            return false;
+        }
+
+        $userStmt = $this->pdo->prepare("SELECT * FROM users WHERE user_id = ?");
+        $userStmt->execute([$this->userId]);
+
+        $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+        $clientEmail = $user['email'];
+        $clientName = $user['firstname'] . " " . $user['lastname'];
+
+        // Calculate total
+        $total = 0;
+
+        // Build transaction table
+        $table = "";
+
+        foreach ($rows as $index => $row) {
+
+            $amount = (float) $row['amount'];
+            $total += $amount;
+
+            $table .= "
+                <tr>
+                    <td>" . ($index + 1) . "</td>
+                    <td>" . htmlspecialchars($row['product_name']) . "</td>
+                    <td>" . htmlspecialchars($row['transaction_id']) . "</td>
+                    <td>₦" . number_format($amount, 2) . "</td>
+                </tr>
+            ";
+        }
+
+        // Create statement document
+        $statement = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <title>Transaction Statement</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 30px;
+                    color: #333;
+                }
+
+                .paper {
+                    max-width: 800px;
+                    margin: auto;
+                    padding: 30px;
+                }
+
+                h2 {
+                    text-align: center;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 25px;
+                }
+
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 12px;
+                    text-align: left;
+                }
+
+                th {
+                    background: #f2f2f2;
+                }
+
+                .total {
+                    text-align: right;
+                    font-size: 18px;
+                    font-weight: bold;
+                    margin-top: 25px;
+                }
+
+                @media print {
+                    @page {
+                        size: A4;
+                        margin: 15mm;
+                    }
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class='paper'>
+                <h2>TRANSACTION STATEMENT</h2>
+
+                <p><strong>Date:</strong> " . htmlspecialchars($date) . "</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Transaction</th>
+                            <th>Transaction ID</th>
+                            <th>Amount Paid</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        $table
+                    </tbody>
+                </table>
+
+                <div class='total'>
+                    Total Amount Paid: ₦" . number_format($total, 2) . "
+                </div>
+            </div>
+        </body>
+        </html>
+        ";
+
+        // Send email using SMTP
+        $mail = new PHPMailer(true);
+
+        try {
+
+            $mail->isSMTP();
+
+            $mail->Host       = $this->smtpHost;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $this->smtpUsername;
+            $mail->Password   = $this->smtpPassword;
+            $mail->SMTPSecure = $this->smtpEncryption;
+            $mail->Port       = $this->smtpPort;
+
+            $mail->setFrom('noreply@iruhost.com', 'Transaction Statement');
+
+            // Recipient
+            $mail->addAddress($clientEmail, $clientName);
+
+            // Email content
+            $mail->isHTML(true);
+
+            $mail->Subject = "Transaction Statement - $date";
+
+            $mail->Body = "
+                <h3>Hello,</h3>
+
+                <p>
+                    Please find attached your transaction statement
+                    for <strong>" . htmlspecialchars($date) . "</strong>.
+                </p>
+
+                <p>
+                    The statement contains all your successful transactions
+                    for the selected date and the total amount paid.
+                </p>
+
+                <p>
+                    Thank you for using our service.
+                </p>
+            ";
+
+            $mail->AltBody = "
+                Hello,
+
+                Please find attached your transaction statement
+                for $date.
+
+                Thank you for using our service.
+            ";
+
+            // Attach the statement
+            $mail->addStringAttachment(
+                $statement,
+                "Transaction-Statement-$date.html",
+                'base64',
+                'text/html'
+            );
+
+            $mail->send();
+
+            return true;
+
+        } catch (Exception $e) {
+
+            error_log("Transaction email error: " . $mail->ErrorInfo);
+
             return false;
         }
     }
