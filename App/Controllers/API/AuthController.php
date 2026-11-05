@@ -167,6 +167,9 @@ class AuthController{
             $stmt = $this->pdo->prepare("INSERT INTO `account_balance`(`user_id`, `balance`) VALUES (?,?)");
             $stmt->execute([$userId, $balance]);
 
+            $userLoginStmt = $this->pdo->prepare("INSERT INTO user_logins (user_id) VALUES (?)");
+            $userLoginStmt->execute([$userId]);
+
             echo json_encode([
                 'status' => 'success',
                 'message' => 'User Created Successfully'
@@ -234,6 +237,14 @@ class AuthController{
         session_regenerate_id(true);
         $this->checkCart($userSession);
         $this->checkChat($userSession);
+
+        $updateLoginStmt = $this->pdo->prepare("UPDATE user_logins SET updated_at = NOW() WHERE user_id = ?");
+        $updateLoginStmt->execute([$rows['user_id']]);
+
+        if ($updateLoginStmt->rowCount() === 0) {
+            $insertLoginStmt = $this->pdo->prepare("INSERT INTO user_logins (user_id) VALUES (?)");
+            $insertLoginStmt->execute([$rows['user_id']]);
+        }
 
         echo json_encode([
             'status' => 'success',
