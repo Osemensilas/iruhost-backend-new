@@ -39,8 +39,8 @@ class DomainController{
 
         $domainId = uniqid('domain_');
 
-        $stmtSearch = $this->pdo->prepare("INSERT INTO `searched_domain`(`domain_id`, `domain`) VALUES (?,?)");
-        $stmtSearch->execute([$domainId, $data]);
+        $stmtSearch = $this->pdo->prepare("INSERT INTO `searched_domains`(`user_id`, `domain_id`, `domain`) VALUES (?,?,?)");
+        $stmtSearch->execute([$this->userId, $domainId, $data]);
 
         $tdls = array_unique([substr($data, strpos($data, '.') + 1),'com', 'org', 'net', 'xyz', 'io', 'co', 'ai', 'info', 'us', 'me']);
         $sld = substr($data, 0, strpos($data, '.'));
