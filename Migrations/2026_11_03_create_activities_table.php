@@ -8,7 +8,7 @@ return function ($pdo){
             domain VARCHAR(36) NOT NULL,
             hosting VARCHAR(100) NOT NULL,
             email VARCHAR(100) NOT NULL,
-            ssl VARCHAR(20) NOT NULL,
+            ssl VARCHAR(100) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ");
